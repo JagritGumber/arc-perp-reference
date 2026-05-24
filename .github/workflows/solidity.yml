@@ -33,6 +33,10 @@ jobs:
       - name: forge test -vv
         run: forge test -vv
 
+      - name: forge test --gas-report
+        run: forge test --gas-report
+        continue-on-error: true
+
       - name: forge coverage
         run: forge coverage --report summary
         continue-on-error: true
