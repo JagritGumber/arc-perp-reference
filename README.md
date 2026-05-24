@@ -113,4 +113,4 @@ MIT. See [LICENSE](./LICENSE).
 
 ## Author
 
-Built by [Selbo](https://selbo.app)'s author for the Arc OSS program. Selbo is the autonomous perp-trading agent that hit the Shapeshifter wall on Arc and rebuilt against Hyperliquid testnet — once `arc-perp-reference` is deployed, Selbo will be its first downstream consumer, migrating execution back to Arc-native while keeping the Arc settlement-anchoring layer it already ships.
+Built for the Arc OSS program. The author also built [Selbo](https://selbo.app) (an autonomous perp-trading agent) for the same Agora hackathon and hit the Shapeshifter wall on Arc firsthand — that's why this repo exists. `arc-perp-reference` is the missing primitive: a forkable open-source perp DEX that any future Arc agent builder can target without waiting on a permissioned matcher or custody binding. It stands on its own; integration with any specific consumer (Selbo included) is out of scope for this submission.
