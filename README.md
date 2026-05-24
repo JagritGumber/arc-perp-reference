@@ -61,7 +61,7 @@ We don't reach `v1.0` until the system has been deployed and used on Arc Testnet
 ## Build
 
 ```bash
-forge install foundry-rs/forge-std --no-commit
+forge install foundry-rs/forge-std
 forge build
 forge test
 ```

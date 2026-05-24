@@ -21,7 +21,7 @@ jobs:
           version: stable
 
       - name: Install forge-std
-        run: forge install foundry-rs/forge-std --no-commit
+        run: forge install foundry-rs/forge-std
 
       - name: forge fmt --check
         run: forge fmt --check
