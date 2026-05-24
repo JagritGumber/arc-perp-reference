@@ -1,0 +1,24 @@
+# Foundry
+cache/
+out/
+broadcast/
+**/broadcast/*/run-latest.json
+**/broadcast/*/*/run-latest.json
+
+# Foundry deps
+lib/
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Dependencies (in case forge ever uses npm style)
+node_modules/
