@@ -1,0 +1,38 @@
+name: solidity
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: forge build + test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Install forge-std
+        run: forge install foundry-rs/forge-std --no-commit
+
+      - name: forge fmt --check
+        run: forge fmt --check
+        continue-on-error: true
+
+      - name: forge build --sizes
+        run: forge build --sizes
+
+      - name: forge test -vv
+        run: forge test -vv
+
+      - name: forge coverage
+        run: forge coverage --report summary
+        continue-on-error: true

@@ -36,21 +36,32 @@ ArcPerpRef
 ├── OrderBook.sol             EIP-712 order submission; in-memory CLOB during block
 ├── SettlementEngine.sol      Permissionless settleBatch; margin + liquidation enforcement
 ├── USDCVault.sol             ERC-20 collateral vault; transparent per-account accounting
-├── MarketRegistry.sol        Admin-curated markets in v0.1; permissionless in v1.1
+├── MarketRegistry.sol        Admin-curated markets in v0.3; permissionless in v0.9
 ├── LiquidationKeeper.sol     Bot-callable liquidation; slashing for invalid calls
 └── types/OrderTypes.sol      EIP-712 typed-data schema for Order
 ```
 
 ## Status
 
-**v0.1 skeleton.** Interfaces + the AccountManager primitive are implemented. Order book, settlement engine, and liquidation keeper are scaffolded with TODOs and ADRs explaining the intended designs. Foundry tests cover what's implemented.
+**v0.1 shipping today.** Two working primitives plus the full interface surface for the rest:
 
-This is the shape the project will grow into, shipped early so other Arc builders can read the architecture, fork the repo, and start building against it before v1.0 lands.
+- `AccountManager.sol` — permissionless EOA registration (5 unit + fuzz tests)
+- `USDCVault.sol` — per-account USDC collateral with deposit/withdraw + margin hooks gated until SettlementEngine binds (20+ unit + fuzz tests)
+- `OrderTypes.sol` — EIP-712 `Order` schema under domain `"ArcPerpRef v1"`
+- Interface stubs for the rest: `IMarketRegistry`, `IOrderBook`, `ISettlement` — frozen API surface so v0.3–v0.5 implementations don't churn downstream
+- `script/Deploy.s.sol` wiring AccountManager + USDCVault end-to-end with on-chain manifest emission
+- Integration test (`test/integration/DepositWithdrawRoundtrip.t.sol`) proving the full register → deposit → withdraw flow works against the two shipped contracts
+- GitHub Actions CI (`.github/workflows/solidity.yml`) running `forge build + test + fmt` on every push
+- ADRs 0001 (batched end-of-block settlement) and 0002 (permissionless account onboarding) explaining the design rationale
+
+Read `ARCHITECTURE.md` for the system-wide design, the version roadmap (`v0.2` through `v0.10`, with `v1.0` reserved for the post-production-hardening graduation), and Mermaid diagrams of every key flow.
+
+We don't reach `v1.0` until the system has been deployed and used on Arc Testnet for long enough to demonstrate stability. Pre-1.0 is the whole journey.
 
 ## Build
 
 ```bash
-forge install
+forge install foundry-rs/forge-std --no-commit
 forge build
 forge test
 ```
