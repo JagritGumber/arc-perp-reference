@@ -1,0 +1,15 @@
+{
+  "$comment": "Filled in after the Circle SCP deploy walk-through; see docs/deploy/circle-scp-runbook.md",
+  "chainId": 11111,
+  "network": "arc-testnet",
+  "deployedAt": null,
+  "deployer": null,
+  "contracts": {
+    "AccountManager": null,
+    "USDCVault": null,
+    "MarketRegistry": null
+  },
+  "constants": {
+    "USDC": "0x3600000000000000000000000000000000000000"
+  }
+}
