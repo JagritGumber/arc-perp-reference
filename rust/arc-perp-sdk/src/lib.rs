@@ -20,8 +20,8 @@
 
 #![doc(html_root_url = "https://docs.rs/arc-perp-sdk")]
 
-pub mod order;
 pub mod domain;
+pub mod order;
 
-pub use order::Order;
 pub use domain::DomainSeparatorInput;
+pub use order::Order;

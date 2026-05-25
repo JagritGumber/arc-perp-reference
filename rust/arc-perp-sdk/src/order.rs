@@ -95,7 +95,16 @@ mod tests {
 
     #[test]
     fn order_is_constructable_and_serde_roundtrips() {
-        let order = Order::new(7, 1, true, 6_500_000_000_000, 1_000_000_000_000_000_000, 42, 1_717_000_000, false);
+        let order = Order::new(
+            7,
+            1,
+            true,
+            6_500_000_000_000,
+            1_000_000_000_000_000_000,
+            42,
+            1_717_000_000,
+            false,
+        );
         let json = serde_json::to_string(&order).expect("serialize");
         let back: Order = serde_json::from_str(&json).expect("deserialize");
         assert_eq!(order, back);
