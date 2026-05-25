@@ -48,5 +48,7 @@ fn main() {
     println!("EIP-712 type string:");
     println!("  {}", Order::EIP712_TYPE_STRING);
     println!();
-    println!("(v0.8 will add signing + RPC submission; this example only constructs the typed payload.)");
+    println!(
+        "(v0.8 will add signing + RPC submission; this example only constructs the typed payload.)"
+    );
 }
