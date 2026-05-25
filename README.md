@@ -37,11 +37,11 @@ Plus the supporting infrastructure: standard ERC-20 USDC vault for collateral, P
 ```
 Tangent
 ├── AccountManager.sol        Permissionless account registration; balance + positions per account
-├── OrderBook.sol             EIP-712 order submission; in-memory CLOB during block
-├── SettlementEngine.sol      Permissionless settleBatch; margin + liquidation enforcement
+├── OrderBook.sol             EIP-712 order submission; in-memory CLOB during block       (v0.4)
+├── SettlementEngine.sol      Permissionless settleBatch; margin + liquidation enforcement (v0.5)
 ├── USDCVault.sol             ERC-20 collateral vault; transparent per-account accounting
 ├── MarketRegistry.sol        Admin-curated markets in v0.3; permissionless in v0.9
-├── LiquidationKeeper.sol     Bot-callable liquidation; slashing for invalid calls
+├── LiquidationKeeper.sol     Bot-callable liquidation; slashing for invalid calls        (v0.6)
 └── types/OrderTypes.sol      EIP-712 typed-data schema for Order
 ```
 
@@ -49,11 +49,11 @@ Tangent
 
 **v0.1 live on Arc Testnet** (see addresses below). Three working primitives plus the full interface surface for the rest:
 
-- `AccountManager.sol` — permissionless EOA registration (5 unit + fuzz tests)
-- `USDCVault.sol` — per-account USDC collateral with deposit/withdraw + margin hooks gated until SettlementEngine binds (20+ unit + fuzz tests + handler-driven invariant fuzz)
-- `MarketRegistry.sol` — admin-curated perp market catalogue with risk params + pluggable `IPriceFeed` oracle adapter (`MockPriceFeed` for tests; Pyth adapter lands at deploy time) (20+ unit + fuzz tests)
-- `OrderTypes.sol` — EIP-712 `Order` schema under domain `"Tangent v1"` with frozen-typehash + sign/recover tests
-- Interface stubs for the rest: `IOrderBook`, `ISettlement`, `IPriceFeed` — frozen API surface so v0.4–v0.6 implementations don't churn downstream
+- `AccountManager.sol`: permissionless EOA registration (5 unit + fuzz tests)
+- `USDCVault.sol`: per-account USDC collateral with deposit/withdraw + margin hooks gated until SettlementEngine binds (20+ unit + fuzz tests + handler-driven invariant fuzz)
+- `MarketRegistry.sol`: admin-curated perp market catalogue with risk params + pluggable `IPriceFeed` oracle adapter (`MockPriceFeed` for tests; Pyth adapter lands at deploy time) (20+ unit + fuzz tests)
+- `OrderTypes.sol`: EIP-712 `Order` schema under domain `"Tangent v1"` with frozen-typehash + sign/recover tests
+- Interface stubs for the rest: `IOrderBook`, `ISettlement`, `IPriceFeed`, a frozen API surface so v0.4 through v0.6 implementations don't churn downstream
 - `script/Deploy.s.sol` wiring AccountManager + USDCVault + MarketRegistry end-to-end with on-chain manifest emission
 - Integration test (`test/integration/DepositWithdrawRoundtrip.t.sol`) proving register market → register account → deposit → mark-price read → withdraw end-to-end against the three shipped contracts
 - GitHub Actions CI (`.github/workflows/solidity.yml`) running `forge build + test + fmt + gas-report` on every push
@@ -92,7 +92,7 @@ The three primitives are permissionless and live. Anyone can:
 - Call `USDCVault.deposit(accountId, amount)` after approving USDC, and `USDCVault.withdraw(accountId, amount)` to retrieve their balance.
 - Read `MarketRegistry.market(marketId)` once the admin (the deployer wallet, by design at v0.1) registers markets. Permissionless market creation lands at v0.9.
 
-The `SettlementEngine` is unbound in v0.1 (it lands at v0.5). Until then, the margin / lock / PnL hooks on `USDCVault` revert if called — deposits and withdrawals work without binding. This is intentional: the deploy proves the account + collateral surface, and the v0.4 `OrderBook` + v0.5 `SettlementEngine` will bind through the existing `ISettlement` interface without churn to anything shipped.
+The `SettlementEngine` is unbound in v0.1 (it lands at v0.5). Until then, the margin / lock / PnL hooks on `USDCVault` revert if called; deposits and withdrawals work without binding. This is intentional: the deploy proves the account + collateral surface, and the v0.4 `OrderBook` + v0.5 `SettlementEngine` will bind through the existing `ISettlement` interface without churn to anything shipped.
 
 ## Deploy your own fork
 
@@ -108,8 +108,9 @@ See `script/Deploy.s.sol` for the wiring order. Alternatively, deploy via Circle
 
 See `docs/adr/` for the design rationale behind:
 
-- **0001 — Batched end-of-block settlement.** Why we batch matches at block boundaries instead of continuous matching, and the MEV-protection tradeoff vs throughput.
-- **0002 — Permissionless account onboarding.** Why we use EOA-registration rather than the Fireblocks-custodied pattern Shapeshifter chose.
+- **0001, Batched end-of-block settlement.** Why we batch matches at block boundaries instead of continuous matching, and the MEV-protection tradeoff vs throughput.
+- **0002, Permissionless account onboarding.** Why we use EOA-registration rather than the Fireblocks-custodied pattern Shapeshifter chose.
+- **0003, USDCVault design.** Why per-account isolated balances + free/locked split + one-shot settlement-engine binding, vs the alternatives.
 
 ## Reference architectures studied
 
@@ -143,4 +144,4 @@ MIT. See [LICENSE](./LICENSE).
 
 ## Author
 
-Built for the Arc OSS program. The author also built [Selbo](https://selbo.app) (an autonomous perp-trading agent) for the same Agora hackathon and hit the Shapeshifter wall on Arc firsthand — that's why Tangent exists. Tangent is the missing primitive: a forkable open-source perp DEX that any future Arc agent builder can target without waiting on a permissioned matcher or custody binding. It stands on its own; integration with any specific consumer (Selbo included) is out of scope for this submission.
+Built for the Arc OSS program. The author also built [Selbo](https://selbo.app) (an autonomous perp-trading agent) for the same Agora hackathon and hit the Shapeshifter wall on Arc firsthand. That's why Tangent exists. Tangent is the missing primitive: a forkable open-source perp DEX that any future Arc agent builder can target without waiting on a permissioned matcher or custody binding. It stands on its own; integration with any specific consumer (Selbo included) is out of scope for this submission.
