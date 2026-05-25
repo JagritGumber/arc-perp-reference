@@ -47,7 +47,7 @@ Tangent
 
 ## Status
 
-**v0.1 shipping today.** Three working primitives plus the full interface surface for the rest:
+**v0.1 live on Arc Testnet** (see addresses below). Three working primitives plus the full interface surface for the rest:
 
 - `AccountManager.sol` — permissionless EOA registration (5 unit + fuzz tests)
 - `USDCVault.sol` — per-account USDC collateral with deposit/withdraw + margin hooks gated until SettlementEngine binds (20+ unit + fuzz tests + handler-driven invariant fuzz)
@@ -72,13 +72,37 @@ forge build
 forge test
 ```
 
-## Deploy to Arc Testnet
+## Live on Arc Testnet
+
+Tangent v0.1 is deployed and verifiable on Arc Testnet (chainId `11111`) as of 2026-05-25:
+
+| Contract | Address |
+|---|---|
+| AccountManager | [`0x2b1ca7ca0a883cd162c619b4a74f0942b22c0e40`](https://testnet.arcscan.app/address/0x2b1ca7ca0a883cd162c619b4a74f0942b22c0e40) |
+| USDCVault | [`0xa4d41df0ad7c420c19c971772e57469459204833`](https://testnet.arcscan.app/address/0xa4d41df0ad7c420c19c971772e57469459204833) |
+| MarketRegistry | [`0x96a6e69af20ae3a52e164373c345e0a47f23ead2`](https://testnet.arcscan.app/address/0x96a6e69af20ae3a52e164373c345e0a47f23ead2) |
+
+USDC collateral token on Arc Testnet: [`0x3600000000000000000000000000000000000000`](https://testnet.arcscan.app/address/0x3600000000000000000000000000000000000000).
+
+Full manifest: [`docs/deployments/arc-testnet.json`](./docs/deployments/arc-testnet.json).
+
+The three primitives are permissionless and live. Anyone can:
+
+- Call `AccountManager.registerAccount()` and receive an `accountId` (no allowlist, no custody binding, no Fireblocks step).
+- Call `USDCVault.deposit(accountId, amount)` after approving USDC, and `USDCVault.withdraw(accountId, amount)` to retrieve their balance.
+- Read `MarketRegistry.market(marketId)` once the admin (the deployer wallet, by design at v0.1) registers markets. Permissionless market creation lands at v0.9.
+
+The `SettlementEngine` is unbound in v0.1 (it lands at v0.5). Until then, the margin / lock / PnL hooks on `USDCVault` revert if called — deposits and withdrawals work without binding. This is intentional: the deploy proves the account + collateral surface, and the v0.4 `OrderBook` + v0.5 `SettlementEngine` will bind through the existing `ISettlement` interface without churn to anything shipped.
+
+## Deploy your own fork
+
+For forks deploying their own instance of the three primitives, the canonical path is Foundry:
 
 ```bash
 forge script script/Deploy.s.sol --rpc-url $ARC_RPC --broadcast --verify
 ```
 
-(See `script/Deploy.s.sol` for the wiring order — vault, market registry, order book, settlement engine, liquidation keeper, account manager.)
+See `script/Deploy.s.sol` for the wiring order. Alternatively, deploy via Circle Smart Contract Platform using the runbook at [`docs/deploy/circle-scp-runbook.md`](./docs/deploy/circle-scp-runbook.md) (no local Foundry required; the GitHub Actions `solidity` workflow ships ready-to-deploy artifacts on every push).
 
 ## Architecture Decision Records
 

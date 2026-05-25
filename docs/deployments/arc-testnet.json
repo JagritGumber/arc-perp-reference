@@ -1,15 +1,14 @@
 {
-  "$comment": "Tangent v0.1 deployment manifest. Filled in after the Circle SCP deploy walk-through; see docs/deploy/circle-scp-runbook.md",
   "project": "Tangent",
   "version": "0.1.0",
   "chainId": 11111,
   "network": "arc-testnet",
-  "deployedAt": null,
-  "deployer": null,
+  "deployedAt": "2026-05-25T18:42:40.104Z",
+  "deployer": "0x12866ac2546ff9a3ed4772174c5efdc794922571",
   "contracts": {
-    "AccountManager": null,
-    "USDCVault": null,
-    "MarketRegistry": null
+    "AccountManager": "0x2b1ca7ca0a883cd162c619b4a74f0942b22c0e40",
+    "USDCVault": "0xa4d41df0ad7c420c19c971772e57469459204833",
+    "MarketRegistry": "0x96a6e69af20ae3a52e164373c345e0a47f23ead2"
   },
   "constants": {
     "USDC": "0x3600000000000000000000000000000000000000"
