@@ -1,0 +1,39 @@
+[package]
+name = "arc-perp-sdk"
+description = "Rust SDK for arc-perp-reference: EIP-712 Order construction + signing + RPC client helpers for autonomous agents on Arc Testnet."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+serde = { workspace = true }
+hex = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = "1"
+
+# v0.8 will add: alloy = "0.x", alloy-signer-local, alloy-sol-types,
+# tokio, tracing. Keeping deps minimal in v0.1 because we are only
+# shipping the typed-data Order shape; full RPC client + signing
+# backends land alongside the keeper binary.
+
+[features]
+default = []
+# Future feature flags:
+# circle-dev-wallets = []  # entity-secret signer via Circle's developer platform
+# aws-kms            = []  # AWS KMS signer for institutional flows
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"

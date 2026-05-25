@@ -54,6 +54,7 @@ ArcPerpRef
 - Integration test (`test/integration/DepositWithdrawRoundtrip.t.sol`) proving register market → register account → deposit → mark-price read → withdraw end-to-end against the three shipped contracts
 - GitHub Actions CI (`.github/workflows/solidity.yml`) running `forge build + test + fmt + gas-report` on every push
 - ADRs 0001 (batched end-of-block settlement), 0002 (permissionless account onboarding), 0003 (USDCVault design)
+- Rust workspace at [`rust/`](./rust/) with the [`arc-perp-sdk`](./rust/arc-perp-sdk/) crate shipping the canonical EIP-712 `Order` + `DomainSeparatorInput` types so downstream agents (Selbo, CapitalArc, future Arc-native agents) target a stable type today, before the on-chain `OrderBook` lands at v0.4. Future crates (`arc-perp-keeper`, `arc-perp-indexer`, `arc-perp-matcher`) reserved in the workspace manifest, landing at v0.8 / v0.9 / v0.10 respectively. Rust CI (`cargo fmt + clippy + check + test + run example`) on every push that touches `rust/**`.
 
 Read `ARCHITECTURE.md` for the system-wide design, the version roadmap (`v0.2` through `v0.10`, with `v1.0` reserved for the post-production-hardening graduation), and Mermaid diagrams of every key flow.
 

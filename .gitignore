@@ -8,6 +8,11 @@ broadcast/
 # Foundry deps
 lib/
 
+# Rust build artifacts
+rust/target/
+rust/**/target/
+**/Cargo.lock.bak
+
 # Env
 .env
 .env.local
