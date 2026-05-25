@@ -9,7 +9,7 @@ pragma solidity ^0.8.26;
 ///         an `address priceFeed` per market; the adapter contract is the
 ///         per-oracle integration.
 ///
-///         Price is in PRICE_SCALE = 1e8 units (i.e. 1e8 == $1). All ArcPerpRef
+///         Price is in PRICE_SCALE = 1e8 units (i.e. 1e8 == $1). All Tangent
 ///         math is in this scale; adapters are responsible for normalizing.
 ///         publishedAt is a unix timestamp; consumers check staleness against
 ///         their own max-age policy.

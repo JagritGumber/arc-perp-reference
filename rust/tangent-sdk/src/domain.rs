@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// On the Solidity side this is computed in
 /// `OrderTypes.sol::domainSeparator(chainId, verifyingContract)` with
-/// name `"ArcPerpRef"` and version `"v1"`. Any change to those constants
+/// name `"Tangent"` and version `"v1"`. Any change to those constants
 /// is a wire-breaking change and the [`DomainSeparatorInput::NAME`] /
 /// [`DomainSeparatorInput::VERSION`] constants here must rev in lockstep.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -27,8 +27,8 @@ pub struct DomainSeparatorInput {
 
 impl DomainSeparatorInput {
     /// EIP-712 domain name. MUST match the Solidity-side
-    /// `keccak256(bytes("ArcPerpRef"))` argument.
-    pub const NAME: &'static str = "ArcPerpRef";
+    /// `keccak256(bytes("Tangent"))` argument.
+    pub const NAME: &'static str = "Tangent";
 
     /// EIP-712 domain version. MUST match the Solidity-side
     /// `keccak256(bytes("v1"))` argument.
@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn domain_name_and_version_match_solidity() {
-        assert_eq!(DomainSeparatorInput::NAME, "ArcPerpRef");
+        assert_eq!(DomainSeparatorInput::NAME, "Tangent");
         assert_eq!(DomainSeparatorInput::VERSION, "v1");
     }
 

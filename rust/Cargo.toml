@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "arc-perp-sdk",
+    "tangent-sdk",
     # Future v0.8+ members:
-    # "arc-perp-keeper",
-    # "arc-perp-indexer",
-    # "arc-perp-matcher",
+    # "tangent-keeper",
+    # "tangent-indexer",
+    # "tangent-matcher",
 ]
 
 [workspace.package]
@@ -15,7 +15,7 @@ rust-version = "1.78"
 license = "MIT"
 authors = ["Jagrit Gumber <jagrit@wearemomentus.com>"]
 repository = "https://github.com/JagritGumber/arc-perp-reference"
-description = "Arc Testnet perpetual-futures DEX reference: off-chain Rust crates and binaries that consume the on-chain Solidity primitives in ../src."
+description = "Tangent: forkable perpetual-futures DEX reference for Arc Testnet. Off-chain Rust crates that consume the on-chain Solidity primitives in ../src."
 
 [workspace.dependencies]
 # Pinned at workspace level so all member crates resolve to the same versions.

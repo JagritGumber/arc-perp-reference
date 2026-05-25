@@ -1,6 +1,7 @@
-//! # arc-perp-sdk
+//! # tangent-sdk
 //!
-//! Rust SDK for [`arc-perp-reference`](https://github.com/JagritGumber/arc-perp-reference).
+//! Rust SDK for [Tangent](https://github.com/JagritGumber/arc-perp-reference) (repo slug
+//! `arc-perp-reference`, project name **Tangent**).
 //!
 //! Designed to be the single dependency a downstream agent (Selbo, CapitalArc,
 //! future Arc-native agents) needs to integrate against the on-chain Solidity
@@ -12,13 +13,13 @@
 //! Pre-1.0. This crate currently ships the canonical EIP-712 [`Order`] type
 //! mirroring `OrderTypes.sol` so off-chain code can construct orders with
 //! the same shape the on-chain `OrderBook` will accept. The full RPC client
-//! (`ArcPerpClient`), Circle Dev Wallet signing backend, and broadcast
+//! (`TangentClient`), Circle Dev Wallet signing backend, and broadcast
 //! helpers land at v0.8 of the parent repo, alongside the keeper daemon.
 //!
 //! See [`ARCHITECTURE.md`](https://github.com/JagritGumber/arc-perp-reference/blob/main/ARCHITECTURE.md)
 //! for the full system design and roadmap.
 
-#![doc(html_root_url = "https://docs.rs/arc-perp-sdk")]
+#![doc(html_root_url = "https://docs.rs/tangent-sdk")]
 
 pub mod domain;
 pub mod order;

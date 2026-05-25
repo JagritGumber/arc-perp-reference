@@ -1,6 +1,6 @@
 # ARCHITECTURE.md
 
-> **arc-perp-reference**: a forkable open-source perpetual-futures DEX for Arc Testnet (Circle's EVM-compatible L1 with Malachite BFT consensus and sub-second finality).
+> **Tangent**: a forkable open-source perpetual-futures DEX for Arc Testnet (Circle's EVM-compatible L1 with Malachite BFT consensus and sub-second finality).
 >
 > This document is the canonical architecture spec for the project. It is intentionally written ahead of full implementation so other Arc builders can read the shape of the system, fork the repo, and start building against it before v1.0 lands. Every section corresponds to a slice of code that either exists today (`v0.1`) or has a versioned landing target on the roadmap in §6.
 
@@ -23,7 +23,7 @@
 
 ## 1. System overview
 
-`arc-perp-reference` is split deliberately along a language boundary that mirrors the trust boundary.
+Tangent is split deliberately along a language boundary that mirrors the trust boundary.
 
 - **Solidity** runs on-chain. Arc enforces EVM bytecode at the consensus layer; there is no Stylus/WASM equivalent, so every contract that touches user funds or position state is Solidity.
 - **Rust** runs off-chain. The keeper daemon, matcher daemon (v1.2), SDK, and indexer are all Rust crates published from a single `rust/` workspace. The language split is itself a differentiator the Arc OSS program asked for: contracts in the chain-native language, infrastructure in the systems language with the strongest ecosystem for high-throughput async services.
@@ -39,10 +39,10 @@ flowchart TB
     end
 
     subgraph Off["Off-chain Rust layer"]
-        SDK["arc-perp-sdk-rust<br/>typed-data signing, RPC client"]
-        KEEPER["arc-perp-keeper<br/>tick() + liquidate() bot"]
-        INDEXER["arc-perp-indexer (v1.1+)<br/>event tap → Postgres"]
-        MATCHER["arc-perp-matcher (v1.2)<br/>ZK-proven off-chain CLOB"]
+        SDK["tangent-sdk<br/>typed-data signing, RPC client"]
+        KEEPER["tangent-keeper<br/>tick() + liquidate() bot"]
+        INDEXER["tangent-indexer (v1.1+)<br/>event tap → Postgres"]
+        MATCHER["tangent-matcher (v1.2)<br/>ZK-proven off-chain CLOB"]
     end
 
     subgraph Chain["On-chain Solidity layer (Arc Testnet)"]
@@ -141,7 +141,7 @@ flowchart TB
 - **Responsibility.** On-chain CLOB with deterministic end-of-block batched matching. Receives EIP-712 signed orders, accumulates them during the block, walks the book on `tick()`, emits `Matched` events, hands match set to `SettlementEngine`.
 - **State held.** `_orders[orderHash] → OrderState {status, filledSize, owner, market, isBuy, limitPrice, size, expiry, reduceOnly}`. Per-market price-level FIFO queues (linked-list-of-orders per price). `_lastTickBlock` to guard against duplicate ticks.
 - **Public API.** `submitOrder(Order, signature)`, `cancelOrder(orderHash)`, `tick()`, `isLive(orderHash) → bool`. Events: `OrderSubmitted`, `OrderCancelled`, `Matched`.
-- **Dependencies.** `AccountManager` (signer recovery via `ownerOf`), `MarketRegistry` (tick/lot validation, paused check), `SettlementEngine` (handoff). EIP-712 domain `"ArcPerpRef v1"` (see `src/types/OrderTypes.sol`).
+- **Dependencies.** `AccountManager` (signer recovery via `ownerOf`), `MarketRegistry` (tick/lot validation, paused check), `SettlementEngine` (handoff). EIP-712 domain `"Tangent v1"` (see `src/types/OrderTypes.sol`).
 - **Trust model.** Trustless for submit and cancel. Keeper-dependent for tick latency (anyone can tick, but a keeper is expected to call every block). The matching algorithm itself is deterministic price-time priority — no MEV opportunity per ADR 0001.
 - **Forkability angle.** The matching engine is reusable for any orderbook market on Arc — spot, options, prediction markets — not just perps. The batched end-of-block pattern is generalizable to any high-MEV-risk venue. EIP-712 domain is the only Arc-perp-specific binding.
 
@@ -165,41 +165,41 @@ flowchart TB
 
 ### 2.2 Off-chain Rust components
 
-#### arc-perp-keeper (v1.0 target, `rust/arc-perp-keeper/`)
+#### tangent-keeper (v1.0 target, `rust/tangent-keeper/`)
 
 - **Responsibility.** Single binary that wakes on every Arc block, calls `OrderBook.tick()`, scans for underwater positions, and calls `LiquidationKeeper.liquidate()` where profitable.
 - **Runtime state.** Block subscriber via `eth_subscribe("newHeads")`, in-memory copy of open positions (rebuilt from `Settled` event tail on startup), gas-price oracle.
-- **Public API surface.** CLI (`arc-perp-keeper run --rpc <url> --key <signing-key>`), metrics endpoint (`/metrics` Prometheus), structured logs (tracing-subscriber JSON).
-- **Dependencies.** `alloy` (Arc-compatible web3 client), `tokio`, `tracing`, `prometheus`. Uses the same `arc-perp-sdk-rust` crate as agents for typed-data contract bindings.
+- **Public API surface.** CLI (`tangent-keeper run --rpc <url> --key <signing-key>`), metrics endpoint (`/metrics` Prometheus), structured logs (tracing-subscriber JSON).
+- **Dependencies.** `alloy` (Arc-compatible web3 client), `tokio`, `tracing`, `prometheus`. Uses the same `tangent-sdk` crate as agents for typed-data contract bindings.
 - **Trust model.** Keeper-dependent for liveness, not for correctness. If the keeper goes down, any trader can call `tick()` themselves; matches just sit in the book one extra block.
 - **Forkability angle.** Single-binary, single-config-file shape so any builder can `cargo run --release` and have a live keeper. The crate is split into `keeper-core` (logic) and `keeper-bin` (entry point) so forks can wrap the core into custom service shapes (k8s pod, AWS Lambda, etc.).
 
-#### arc-perp-sdk-rust (v1.0 target, `rust/arc-perp-sdk/`)
+#### tangent-sdk (v1.0 target, `rust/tangent-sdk/`)
 
 - **Responsibility.** Typed-data signing + RPC client for agents. The single dependency a downstream agent like Selbo needs to integrate against arc-perp-reference.
 - **Runtime state.** Stateless. Holds RPC client config and EIP-712 domain hash; everything else is per-call.
-- **Public API surface.** Async Rust API: `ArcPerpClient::new(rpc, account, signer)`, `client.register_account()`, `client.deposit(amount)`, `client.submit_order(OrderParams)`, `client.cancel_order(hash)`, `client.withdraw(amount, to)`, `client.position(market) → Position`, `client.equity() → I256`. Re-exports the EIP-712 `Order` struct and `domain_separator()` helper for advanced users.
+- **Public API surface.** Async Rust API: `TangentClient::new(rpc, account, signer)`, `client.register_account()`, `client.deposit(amount)`, `client.submit_order(OrderParams)`, `client.cancel_order(hash)`, `client.withdraw(amount, to)`, `client.position(market) → Position`, `client.equity() → I256`. Re-exports the EIP-712 `Order` struct and `domain_separator()` helper for advanced users.
 - **Dependencies.** `alloy` for RPC + ABI, `alloy-signer-aws` and `alloy-signer-local` for signing backends, `serde` for the Order struct. Optional `circle-dev-wallets` feature flag for entity-secret signing (calls Circle's REST API to sign).
 - **Trust model.** Trustless. The SDK is a thin client — every operation is a public on-chain call. The SDK never holds user funds.
 - **Forkability angle.** First-class Rust crate published to crates.io. TypeScript SDK is intentionally deferred to a separate repo so the canonical reference stays single-language per side of the boundary.
 
-#### arc-perp-matcher (v1.2 target, `rust/arc-perp-matcher/`)
+#### tangent-matcher (v1.2 target, `rust/tangent-matcher/`)
 
 - **Responsibility.** Off-chain orderbook with ZK proof generation. Lighter-style: matches orders off-chain at much higher throughput than on-chain `tick()` can sustain, generates a SNARK proving the match set is correct against the on-chain book state, submits proof + matches to `SettlementEngineV2.settleBatchWithProof()`.
 - **Runtime state.** Full in-memory CLOB per market (price-time-priority queues), proof prover (likely `risc0` or `sp1`).
 - **Public API surface.** gRPC for order ingestion (mirrors `OrderBook.submitOrder` shape), batch submission to chain via the SDK.
-- **Dependencies.** `arc-perp-sdk-rust`, ZK proving stack TBD at v1.2 spec time.
+- **Dependencies.** `tangent-sdk`, ZK proving stack TBD at v1.2 spec time.
 - **Trust model.** Trustless given a valid proof. The on-chain verifier rejects any settlement whose proof does not match the committed book state. Multiple matchers can run in parallel; the first valid proof per block wins.
-- **Forkability angle.** Optional component — `arc-perp-reference` at v1.0 already works without the matcher. The matcher is an opt-in scaling layer for forks that outgrow on-chain matching.
+- **Forkability angle.** Optional component — Tangent at v1.0 already works without the matcher. The matcher is an opt-in scaling layer for forks that outgrow on-chain matching.
 
-#### arc-perp-indexer (v1.1 target, `rust/arc-perp-indexer/`)
+#### tangent-indexer (v1.1 target, `rust/tangent-indexer/`)
 
 - **Responsibility.** Event tap that mirrors on-chain state into a Postgres database optimized for analytics and frontend queries (orderbook depth, fills feed, trader positions, PnL history).
 - **Runtime state.** Last-indexed block cursor, in-memory de-duplication buffer for reorg safety (Malachite BFT removes reorg risk but the indexer keeps a small confirmation buffer anyway).
 - **Public API surface.** GraphQL endpoint (`async-graphql`), REST endpoints for orderbook snapshots, WebSocket subscription for live fills.
 - **Dependencies.** `alloy` for event subscription, `sqlx` for Postgres, `async-graphql`. Optional Redis cache for hot reads.
 - **Trust model.** Trustless. The indexer reads only public events; corrupting its database does not affect contract state. Multiple independent indexers can run in parallel and disagreement is detectable by comparing GraphQL responses.
-- **Forkability angle.** Schema migrations under `sqlx-cli` so any fork can `cargo sqlx migrate run` to bootstrap a fresh indexer DB. The GraphQL schema is exposed under `rust/arc-perp-indexer/schema.graphql` for frontend codegen.
+- **Forkability angle.** Schema migrations under `sqlx-cli` so any fork can `cargo sqlx migrate run` to bootstrap a fresh indexer DB. The GraphQL schema is exposed under `rust/tangent-indexer/schema.graphql` for frontend codegen.
 
 ---
 
@@ -211,13 +211,13 @@ flowchart TB
 sequenceDiagram
     autonumber
     actor Agent as Agent (e.g. Selbo)
-    participant SDK as arc-perp-sdk-rust
+    participant SDK as tangent-sdk
     participant Wallet as Circle Dev Wallet
     participant RPC as Arc RPC
     participant AM as AccountManager
-    participant IDX as arc-perp-indexer
+    participant IDX as tangent-indexer
 
-    Agent->>SDK: ArcPerpClient::new(rpc, wallet)
+    Agent->>SDK: TangentClient::new(rpc, wallet)
     Agent->>SDK: client.register_account()
     SDK->>Wallet: sign tx (entity secret)
     Wallet-->>SDK: signed registerAccount() tx
@@ -241,7 +241,7 @@ sequenceDiagram
 sequenceDiagram
     autonumber
     actor Agent
-    participant SDK as arc-perp-sdk-rust
+    participant SDK as tangent-sdk
     participant USDC as USDC ERC-20
     participant Vault as USDCVault
     participant AM as AccountManager
@@ -268,17 +268,17 @@ sequenceDiagram
 sequenceDiagram
     autonumber
     actor Agent
-    participant SDK as arc-perp-sdk-rust
+    participant SDK as tangent-sdk
     participant Wallet as Circle Dev Wallet
     participant OB as OrderBook
-    participant K as arc-perp-keeper
+    participant K as tangent-keeper
     participant SE as SettlementEngine
     participant V as USDCVault
     participant MR as MarketRegistry
     participant AM as AccountManager
 
     Agent->>SDK: client.submit_order(market=BTC, isBuy=true, size=1e18, limitPrice=...)
-    SDK->>SDK: build Order struct, hash via EIP-712 domain "ArcPerpRef v1"
+    SDK->>SDK: build Order struct, hash via EIP-712 domain "Tangent v1"
     SDK->>Wallet: sign digest
     Wallet-->>SDK: signature
     SDK->>OB: submitOrder(order, signature)
@@ -319,9 +319,9 @@ sequenceDiagram
 sequenceDiagram
     autonumber
     actor Agent
-    participant SDK as arc-perp-sdk-rust
+    participant SDK as tangent-sdk
     participant OB as OrderBook
-    participant K as arc-perp-keeper
+    participant K as tangent-keeper
     participant SE as SettlementEngine
     participant V as USDCVault
     participant MR as MarketRegistry
@@ -359,7 +359,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    participant K as arc-perp-keeper
+    participant K as tangent-keeper
     participant LK as LiquidationKeeper
     participant SE as SettlementEngine
     participant MR as MarketRegistry
@@ -396,7 +396,7 @@ sequenceDiagram
 sequenceDiagram
     autonumber
     actor Agent
-    participant SDK as arc-perp-sdk-rust
+    participant SDK as tangent-sdk
     participant V as USDCVault
     participant AM as AccountManager
     participant SE as SettlementEngine
@@ -583,10 +583,10 @@ classDiagram
 | **SettlementEngine** | Trustless | Anyone can call `settleBatch`. Atomic-revert on any invalid match makes griefing self-punishing. This is the primitive that breaks `SETTLEMENT_ROLE` |
 | **LiquidationKeeper** | Trustless + economic-incentive | Underwater check re-derives from oracle on every call. Bounty funds keepers; invalid-call asymmetry funds correctness |
 | **Pyth oracle adapter** | Oracle-trusted | Pyth attestor set + Arc's view of price-update VAA is the trust root. Standard for any oracle-dependent perp protocol |
-| **arc-perp-keeper** | Keeper-dependent (liveness only) | If down, traders self-tick. Cannot censor orders (anyone can call `tick()` in the same block) |
-| **arc-perp-sdk-rust** | Trustless | Thin client; never holds funds; never has special contract privileges |
-| **arc-perp-matcher (v1.2)** | Trustless given valid proof | ZK proof against on-chain book state. Invalid proofs revert on `settleBatchWithProof` |
-| **arc-perp-indexer** | Trustless (read-only) | Wrong indexer state never affects contracts. Multi-instance disagreement is publicly detectable |
+| **tangent-keeper** | Keeper-dependent (liveness only) | If down, traders self-tick. Cannot censor orders (anyone can call `tick()` in the same block) |
+| **tangent-sdk** | Trustless | Thin client; never holds funds; never has special contract privileges |
+| **tangent-matcher (v1.2)** | Trustless given valid proof | ZK proof against on-chain book state. Invalid proofs revert on `settleBatchWithProof` |
+| **tangent-indexer** | Trustless (read-only) | Wrong indexer state never affects contracts. Multi-instance disagreement is publicly detectable |
 
 ---
 
@@ -607,14 +607,14 @@ The roadmap is deliberately sliced so each version is independently mergeable, d
 | **v0.5 — SettlementEngine** | Position accounting, margin checks, atomic batch revert, settlement-window enforcement, funding-rate accumulator (simple on-chain TWAP), integration tests against v0.4 | v0.1, v0.3, v0.4 | ~600 Sol + 700 test | High. The interaction surface with OrderBook + USDCVault is where economic bugs live |
 | **v0.6 — LiquidationKeeper** | Permissionless liquidate(), bounty payout, slashing for invalid calls, invariant tests for "liquidation is only callable on truly underwater positions" | v0.1, v0.3, v0.5 | ~250 Sol + 300 test | Med. Logic is small but adversarial — needs heavy fuzzing |
 | **v0.7 — Deploy + Arc Testnet** | Full Deploy.s.sol with the full contract wiring order from §7, deployment manifest emission, Arcscan verification, end-to-end shadow trade against real Arc Testnet RPC | v0.1, v0.3–v0.6 | ~200 Sol + ops docs | Med. First touch with Arc Testnet — expect oracle/feed integration drift |
-| **v0.8 — Keeper + Rust SDK** | `rust/arc-perp-keeper` daemon (tick + liquidate), `rust/arc-perp-sdk-rust` crate (typed-data signing, RPC client, Circle Dev Wallet integration), GitHub Actions Rust CI, crates.io publish | v0.7 | ~2,500 Rust + tests | Med. New language surface; expect alloy ABI codegen friction |
-| **v0.9 — Sub-accounts + permissionless markets + indexer** | AccountManager sub-account derivation, MarketRegistry permissionless registration with bond + slashing, `rust/arc-perp-indexer` daemon with Postgres + GraphQL | v0.8 | ~400 Sol + 1,500 Rust | Med–High. Permissionless markets need governance mechanics |
-| **v0.10 — ZK-matched orderbook** | `rust/arc-perp-matcher` with proof generation, `SettlementEngineV2.settleBatchWithProof()` on-chain verifier, opt-in per-market flag for matcher-mode vs on-chain tick-mode | v0.9 | ~800 Sol + 4,000 Rust | High. ZK stack (sp1/risc0) integration is the deepest unknown in the roadmap |
+| **v0.8 — Keeper + Rust SDK** | `rust/tangent-keeper` daemon (tick + liquidate), `rust/tangent-sdk` crate (typed-data signing, RPC client, Circle Dev Wallet integration), GitHub Actions Rust CI, crates.io publish | v0.7 | ~2,500 Rust + tests | Med. New language surface; expect alloy ABI codegen friction |
+| **v0.9 — Sub-accounts + permissionless markets + indexer** | AccountManager sub-account derivation, MarketRegistry permissionless registration with bond + slashing, `rust/tangent-indexer` daemon with Postgres + GraphQL | v0.8 | ~400 Sol + 1,500 Rust | Med–High. Permissionless markets need governance mechanics |
+| **v0.10 — ZK-matched orderbook** | `rust/tangent-matcher` with proof generation, `SettlementEngineV2.settleBatchWithProof()` on-chain verifier, opt-in per-market flag for matcher-mode vs on-chain tick-mode | v0.9 | ~800 Sol + 4,000 Rust | High. ZK stack (sp1/risc0) integration is the deepest unknown in the roadmap |
 | **v1.0 — Production-hardened** | Earned, not declared. Promoted to `v1.0` after the system has been deployed and used on Arc Testnet (or eventually mainnet) for long enough to demonstrate stability: zero unresolved critical bugs across the contract suite, a meaningful number of accounts onboarded by external builders, the API surface stable across at least one full development cycle, and a security review (formal or community) on the high-risk contracts (OrderBook, SettlementEngine, LiquidationKeeper). | All prior | — | This is the bar for graduating out of v0.x, not a feature scope |
 
 ```mermaid
 gantt
-    title arc-perp-reference version roadmap (everything pre-1.0 until battle-tested)
+    title Tangent version roadmap (everything pre-1.0 until battle-tested)
     dateFormat YYYY-MM-DD
     axisFormat %b %d
     section Shipping today
@@ -705,11 +705,11 @@ arc-perp-reference/
 ├── rust/                                 # Rust workspace
 │   ├── Cargo.toml                        # workspace manifest
 │   ├── rust-toolchain.toml               # pinned stable
-│   ├── arc-perp-sdk/                     # v1.0
+│   ├── tangent-sdk/                     # v1.0
 │   │   ├── Cargo.toml
 │   │   ├── src/
 │   │   │   ├── lib.rs
-│   │   │   ├── client.rs                 # ArcPerpClient
+│   │   │   ├── client.rs                 # TangentClient
 │   │   │   ├── order.rs                  # EIP-712 Order + signing
 │   │   │   ├── domain.rs                 # domain separator helper
 │   │   │   ├── circle_wallet.rs          # entity-secret signer (feature-flagged)
@@ -717,7 +717,7 @@ arc-perp-reference/
 │   │   ├── tests/
 │   │   └── examples/
 │   │       └── place_order.rs
-│   ├── arc-perp-keeper/                  # v1.0
+│   ├── tangent-keeper/                  # v1.0
 │   │   ├── Cargo.toml
 │   │   ├── src/
 │   │   │   ├── main.rs
@@ -726,7 +726,7 @@ arc-perp-reference/
 │   │   │   ├── metrics.rs
 │   │   │   └── config.rs
 │   │   └── tests/
-│   ├── arc-perp-indexer/                 # v1.1
+│   ├── tangent-indexer/                 # v1.1
 │   │   ├── Cargo.toml
 │   │   ├── migrations/                   # sqlx
 │   │   ├── schema.graphql
@@ -735,7 +735,7 @@ arc-perp-reference/
 │   │       ├── ingest.rs
 │   │       ├── graphql.rs
 │   │       └── api.rs
-│   └── arc-perp-matcher/                 # v1.2
+│   └── tangent-matcher/                 # v1.2
 │       ├── Cargo.toml
 │       └── src/
 │           ├── main.rs
@@ -770,7 +770,7 @@ arc-perp-reference/
 ### 8.3 Circle Developer-Controlled Wallets
 
 - **Role.** Signing backend for autonomous agents that don't hold raw private keys. Each agent provisions a Dev Wallet, signs the entity-secret cipher once at startup, and uses the wallet to sign each Order's EIP-712 digest.
-- **Integration shape.** Optional `circle-dev-wallets` feature in `arc-perp-sdk-rust`. When enabled, `ArcPerpClient::new_with_circle_wallet(rpc, wallet_id, entity_secret)` returns a client whose `submit_order` builds the EIP-712 digest locally and forwards it to Circle's REST signing API. The signed payload is verified locally before submission.
+- **Integration shape.** Optional `circle-dev-wallets` feature in `tangent-sdk`. When enabled, `TangentClient::new_with_circle_wallet(rpc, wallet_id, entity_secret)` returns a client whose `submit_order` builds the EIP-712 digest locally and forwards it to Circle's REST signing API. The signed payload is verified locally before submission.
 - **Why it matters.** Selbo and CapitalArc both use this pattern. The reference SDK supporting it natively means an agent migration from Hyperliquid back to Arc is a configuration change, not a signing-stack rewrite.
 
 ### 8.4 Arc Testnet RPC
@@ -823,7 +823,7 @@ See [ADR 0002](./docs/adr/0002-permissionless-account-onboarding.md). One-line s
 **Rationale:** Shapeshifter's source is partially closed (matcher, account provisioning, settlement gates are all off-chain Go or proprietary). Forking would inherit those gaps and the licensing posture is unclear. Building standalone lets us:
 - Pick a clean MIT license.
 - Design every primitive for forkability from day one rather than retrofitting onto a closed-system shape.
-- Mirror the public on-chain Order struct (which is already verified on Arcscan) under a distinct EIP-712 domain (`"ArcPerpRef v1"`) so signatures are not portable between the two systems — a deliberate hygiene boundary.
+- Mirror the public on-chain Order struct (which is already verified on Arcscan) under a distinct EIP-712 domain (`"Tangent v1"`) so signatures are not portable between the two systems — a deliberate hygiene boundary.
 
 ### 9.6 Single market per OrderBook vs multi-market
 

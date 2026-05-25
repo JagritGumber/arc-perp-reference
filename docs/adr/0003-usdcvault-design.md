@@ -5,7 +5,7 @@ Date: 2026-05-25
 
 ## Context
 
-`USDCVault` is the only contract in arc-perp-reference that holds user funds. It must do three things well:
+`USDCVault` is the only contract in Tangent that holds user funds. It must do three things well:
 
 1. Let any registered account deposit and withdraw USDC without intermediaries.
 2. Expose margin hooks (`lockMargin`, `releaseMargin`, `applyPnL`) that the future `SettlementEngine` (v0.5) can call to enforce position health during trades.

@@ -37,7 +37,7 @@ contract Deploy is Script {
         USDCVault vault = new USDCVault(IERC20(usdc), IAccountManager(address(accountManager)));
         MarketRegistry markets = new MarketRegistry(marketAdmin);
 
-        console2.log("--- arc-perp-reference deployment ---");
+        console2.log("--- Tangent deployment ---");
         console2.log("AccountManager: ", address(accountManager));
         console2.log("USDCVault:      ", address(vault));
         console2.log("MarketRegistry: ", address(markets));

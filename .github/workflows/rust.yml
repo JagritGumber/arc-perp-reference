@@ -41,4 +41,4 @@ jobs:
         run: cargo test --workspace --all-targets
 
       - name: cargo run --example construct_order
-        run: cargo run -p arc-perp-sdk --example construct_order
+        run: cargo run -p tangent-sdk --example construct_order

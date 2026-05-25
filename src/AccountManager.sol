@@ -4,7 +4,7 @@ pragma solidity ^0.8.26;
 import {IAccountManager} from "./interfaces/IAccountManager.sol";
 
 /// @title  AccountManager
-/// @notice Permissionless account registration for ArcPerpRef. Any EOA can
+/// @notice Permissionless account registration for Tangent. Any EOA can
 ///         call registerAccount() and immediately receive a tradeable
 ///         accountId; no off-chain custody-binding step. Contrasts with
 ///         Shapeshifter's Fireblocks-bound pattern where getAccountOwner is

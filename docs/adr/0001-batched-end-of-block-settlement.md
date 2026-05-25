@@ -18,7 +18,7 @@ Arc inherits the architectural fit for this approach: Malachite BFT gives sub-se
 
 ## Decision
 
-`arc-perp-reference` ships batched end-of-block matching. Specifically:
+Tangent ships batched end-of-block matching. Specifically:
 
 - `OrderBook.submitOrder` validates the EIP-712 signature, checks nonce / expiry / market state, and stores the order in contract state without attempting to match it.
 - `OrderBook.tick()` is permissionless. Anyone can call it. The first caller per block walks the resting book once with price-time priority, emits `Matched` events for each fill, and hands the match set off to `SettlementEngine.settleBatch` in the same transaction.

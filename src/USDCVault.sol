@@ -14,7 +14,7 @@ interface IERC20 {
 }
 
 /// @title  USDCVault
-/// @notice Per-account USDC collateral for ArcPerpRef. Tracks free + locked
+/// @notice Per-account USDC collateral for Tangent. Tracks free + locked
 ///         balances per accountId, exposes deposit/withdraw to account owners,
 ///         and exposes lockMargin/releaseMargin/applyPnL hooks gated to the
 ///         deploy-time-bound SettlementEngine.

@@ -1,5 +1,7 @@
 {
-  "$comment": "Filled in after the Circle SCP deploy walk-through; see docs/deploy/circle-scp-runbook.md",
+  "$comment": "Tangent v0.1 deployment manifest. Filled in after the Circle SCP deploy walk-through; see docs/deploy/circle-scp-runbook.md",
+  "project": "Tangent",
+  "version": "0.1.0",
   "chainId": 11111,
   "network": "arc-testnet",
   "deployedAt": null,

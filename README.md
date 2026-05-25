@@ -1,8 +1,12 @@
-# arc-perp-reference
+# Tangent
 
 A forkable open-source perpetual-futures DEX reference implementation for Arc Testnet.
 
+A circle is the locus of arcs; a tangent is the line that meets one. Arc is Circle's chain; Tangent is the perp primitive that meets it.
+
 MIT-licensed. Designed for the Arc OSS program (Canteen × Circle × Arc, 2026).
+
+> **Repository slug note.** This repository's GitHub slug is `arc-perp-reference` because that was the working name when the hackathon submission was filed. The project's actual name is **Tangent**; all code, contracts, and EIP-712 domains use `Tangent`. The slug is preserved for permalink stability.
 
 ## Why this exists
 
@@ -22,7 +26,7 @@ Four reusable primitives that no current `circlefin/arc-*` repository covers:
 
 2. **On-chain CLOB with deterministic end-of-block batched settlement.** Tempo-inspired pattern adapted to Arc's Malachite sub-second finality. Orders accumulate during the block and match atomically at end-of-block, eliminating MEV between order placement and match.
 
-3. **Public EIP-712 order schema** (`Order(accountId, marketId, isBuy, limitPrice, size, nonce, expiry, reduceOnly)`) under EIP-712 domain `"ArcPerpRef v1"`. External agent builders can sign orders the matcher will accept without any permissioned binding step.
+3. **Public EIP-712 order schema** (`Order(accountId, marketId, isBuy, limitPrice, size, nonce, expiry, reduceOnly)`) under EIP-712 domain `"Tangent v1"`. External agent builders can sign orders the matcher will accept without any permissioned binding step.
 
 4. **Permissionless `settleBatch` entry point.** Anyone can call it with a valid match set. Margin and liquidation checks enforced on-chain. No `SETTLEMENT_ROLE`, no closed engine.
 
@@ -31,7 +35,7 @@ Plus the supporting infrastructure: standard ERC-20 USDC vault for collateral, P
 ## Architecture at a glance
 
 ```
-ArcPerpRef
+Tangent
 ├── AccountManager.sol        Permissionless account registration; balance + positions per account
 ├── OrderBook.sol             EIP-712 order submission; in-memory CLOB during block
 ├── SettlementEngine.sol      Permissionless settleBatch; margin + liquidation enforcement
@@ -48,13 +52,13 @@ ArcPerpRef
 - `AccountManager.sol` — permissionless EOA registration (5 unit + fuzz tests)
 - `USDCVault.sol` — per-account USDC collateral with deposit/withdraw + margin hooks gated until SettlementEngine binds (20+ unit + fuzz tests + handler-driven invariant fuzz)
 - `MarketRegistry.sol` — admin-curated perp market catalogue with risk params + pluggable `IPriceFeed` oracle adapter (`MockPriceFeed` for tests; Pyth adapter lands at deploy time) (20+ unit + fuzz tests)
-- `OrderTypes.sol` — EIP-712 `Order` schema under domain `"ArcPerpRef v1"` with frozen-typehash + sign/recover tests
+- `OrderTypes.sol` — EIP-712 `Order` schema under domain `"Tangent v1"` with frozen-typehash + sign/recover tests
 - Interface stubs for the rest: `IOrderBook`, `ISettlement`, `IPriceFeed` — frozen API surface so v0.4–v0.6 implementations don't churn downstream
 - `script/Deploy.s.sol` wiring AccountManager + USDCVault + MarketRegistry end-to-end with on-chain manifest emission
 - Integration test (`test/integration/DepositWithdrawRoundtrip.t.sol`) proving register market → register account → deposit → mark-price read → withdraw end-to-end against the three shipped contracts
 - GitHub Actions CI (`.github/workflows/solidity.yml`) running `forge build + test + fmt + gas-report` on every push
 - ADRs 0001 (batched end-of-block settlement), 0002 (permissionless account onboarding), 0003 (USDCVault design)
-- Rust workspace at [`rust/`](./rust/) with the [`arc-perp-sdk`](./rust/arc-perp-sdk/) crate shipping the canonical EIP-712 `Order` + `DomainSeparatorInput` types so downstream agents (Selbo, CapitalArc, future Arc-native agents) target a stable type today, before the on-chain `OrderBook` lands at v0.4. Future crates (`arc-perp-keeper`, `arc-perp-indexer`, `arc-perp-matcher`) reserved in the workspace manifest, landing at v0.8 / v0.9 / v0.10 respectively. Rust CI (`cargo fmt + clippy + check + test + run example`) on every push that touches `rust/**`.
+- Rust workspace at [`rust/`](./rust/) with the [`tangent-sdk`](./rust/tangent-sdk/) crate shipping the canonical EIP-712 `Order` + `DomainSeparatorInput` types so downstream agents (Selbo, CapitalArc, future Arc-native agents) target a stable type today, before the on-chain `OrderBook` lands at v0.4. Future crates (`tangent-keeper`, `tangent-indexer`, `tangent-matcher`) reserved in the workspace manifest, landing at v0.8 / v0.9 / v0.10 respectively. Rust CI (`cargo fmt + clippy + check + test + run example`) on every push that touches `rust/**`.
 
 Read `ARCHITECTURE.md` for the system-wide design, the version roadmap (`v0.2` through `v0.10`, with `v1.0` reserved for the post-production-hardening graduation), and Mermaid diagrams of every key flow.
 
@@ -115,4 +119,4 @@ MIT. See [LICENSE](./LICENSE).
 
 ## Author
 
-Built for the Arc OSS program. The author also built [Selbo](https://selbo.app) (an autonomous perp-trading agent) for the same Agora hackathon and hit the Shapeshifter wall on Arc firsthand — that's why this repo exists. `arc-perp-reference` is the missing primitive: a forkable open-source perp DEX that any future Arc agent builder can target without waiting on a permissioned matcher or custody binding. It stands on its own; integration with any specific consumer (Selbo included) is out of scope for this submission.
+Built for the Arc OSS program. The author also built [Selbo](https://selbo.app) (an autonomous perp-trading agent) for the same Agora hackathon and hit the Shapeshifter wall on Arc firsthand — that's why Tangent exists. Tangent is the missing primitive: a forkable open-source perp DEX that any future Arc agent builder can target without waiting on a permissioned matcher or custody binding. It stands on its own; integration with any specific consumer (Selbo included) is out of scope for this submission.

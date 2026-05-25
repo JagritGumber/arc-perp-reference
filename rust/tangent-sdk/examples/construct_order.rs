@@ -4,9 +4,9 @@
 //! Circle Dev Wallet and submits through the on-chain `OrderBook`.
 //!
 //! Run with:
-//!   cargo run --example construct_order -p arc-perp-sdk
+//!   cargo run --example construct_order -p tangent-sdk
 
-use arc_perp_sdk::{domain::DomainSeparatorInput, order::Order};
+use tangent_sdk::{domain::DomainSeparatorInput, order::Order};
 
 fn main() {
     // A long BTC order: 1 BTC notional at $65k limit price.
@@ -28,7 +28,7 @@ fn main() {
     let domain = DomainSeparatorInput::new(11111, [0u8; 20]);
     let verifying_hex = hex::encode(domain.verifying_contract);
 
-    println!("=== arc-perp-sdk example: constructed order ===");
+    println!("=== tangent-sdk example: constructed order ===");
     println!("EIP-712 domain:");
     println!("  name             : {}", DomainSeparatorInput::NAME);
     println!("  version          : {}", DomainSeparatorInput::VERSION);

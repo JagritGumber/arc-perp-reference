@@ -13,7 +13,7 @@ Both teams that hit this wall during the Agora hackathon (Selbo and Baus's Capit
 
 ## Decision
 
-`arc-perp-reference` ships permissionless account onboarding. Specifically:
+Tangent ships permissionless account onboarding. Specifically:
 
 - `AccountManager.registerAccount()` is callable by any EOA with no preconditions. The function assigns the caller a fresh monotonic `accountId` and records the mapping `accountId -> msg.sender` directly in contract state. No off-chain step, no allowlist, no custodian binding.
 - All downstream contracts (`OrderBook`, `SettlementEngine`, `USDCVault`) consume `AccountManager.ownerOf(accountId)` as the canonical signer source. Order signature recovery checks the signed digest against the EOA returned by `ownerOf`.

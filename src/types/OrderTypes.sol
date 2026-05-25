@@ -2,7 +2,7 @@
 pragma solidity ^0.8.26;
 
 /// @title  OrderTypes
-/// @notice EIP-712 typed-data schema for ArcPerpRef orders.
+/// @notice EIP-712 typed-data schema for Tangent orders.
 /// @dev    Canonical public schema. Designed to be a stable baseline future
 ///         Arc perp builders can extend rather than reinvent. Mirrors the
 ///         Shapeshifter CMDT ClearingHouse Order struct shape (which is
@@ -52,13 +52,13 @@ library OrderTypes {
         );
     }
 
-    /// @notice EIP-712 domain separator construction. Domain name is ArcPerpRef
+    /// @notice EIP-712 domain separator construction. Domain name is Tangent
     ///         v1; chainId and verifyingContract are bound at deploy.
     function domainSeparator(uint256 chainId, address verifyingContract) internal pure returns (bytes32) {
         return keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(bytes("ArcPerpRef")),
+                keccak256(bytes("Tangent")),
                 keccak256(bytes("v1")),
                 chainId,
                 verifyingContract

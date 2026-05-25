@@ -8,15 +8,15 @@ See [`../ARCHITECTURE.md`](../ARCHITECTURE.md) §2.2 for the layer's design rati
 
 | Crate | Kind | Roadmap | Status |
 |---|---|---|---|
-| [`arc-perp-sdk`](./arc-perp-sdk/) | library | v0.1 (typed-data) → v0.8 (full SDK) | **shipping today**: canonical EIP-712 `Order` + `DomainSeparatorInput` types |
+| [`tangent-sdk`](./tangent-sdk/) | library | v0.1 (typed-data) → v0.8 (full SDK) | **shipping today**: canonical EIP-712 `Order` + `DomainSeparatorInput` types |
 
 ## Roadmap (members landing in future versions)
 
 | Crate | Kind | Lands in |
 |---|---|---|
-| `arc-perp-keeper` | binary daemon | v0.8 — calls `OrderBook.tick()` per block + scans for liquidations |
-| `arc-perp-indexer` | binary daemon | v0.9 — Postgres + GraphQL event tap for frontends and analytics |
-| `arc-perp-matcher` | binary daemon | v0.10 — off-chain CLOB with ZK proofs of fair matching |
+| `tangent-keeper` | binary daemon | v0.8 — calls `OrderBook.tick()` per block + scans for liquidations |
+| `tangent-indexer` | binary daemon | v0.9 — Postgres + GraphQL event tap for frontends and analytics |
+| `tangent-matcher` | binary daemon | v0.10 — off-chain CLOB with ZK proofs of fair matching |
 
 The workspace `Cargo.toml` reserves the names commented-out so the dependency graph stays coherent as crates land.
 
@@ -28,7 +28,7 @@ cargo fmt --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo check --workspace
 cargo test --workspace
-cargo run -p arc-perp-sdk --example construct_order
+cargo run -p tangent-sdk --example construct_order
 ```
 
 CI runs all of the above on every push that touches `rust/**`.
