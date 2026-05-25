@@ -10,32 +10,37 @@ use arc_perp_sdk::{domain::DomainSeparatorInput, order::Order};
 
 fn main() {
     // A long BTC order: 1 BTC notional at $65k limit price.
+    // accountId is assigned by AccountManager.registerAccount; marketId by
+    // MarketRegistry.registerMarket. limitPrice is in PRICE_SCALE (1e8) units
+    // ($65,000 -> 6_500_000_000_000) and size is in 1e18 base units
+    // (1 BTC -> 1_000_000_000_000_000_000). nonce is per-account monotonic.
     let order = Order::new(
-        7,                       // accountId (from AccountManager.registerAccount)
-        1,                       // marketId (BTC perp, from MarketRegistry.registerMarket)
-        true,                    // isBuy = long entry
-        6_500_000_000_000,       // limitPrice = $65,000 in PRICE_SCALE (1e8) units
-        1_000_000_000_000_000_000, // size = 1 BTC in 1e18 base units
-        1,                       // nonce
-        1_717_000_000,           // expiry (unix timestamp)
-        false,                   // not reduce-only
+        7,
+        1,
+        true,
+        6_500_000_000_000,
+        1_000_000_000_000_000_000,
+        1,
+        1_717_000_000,
+        false,
     );
 
     let domain = DomainSeparatorInput::new(11111, [0u8; 20]);
+    let verifying_hex = hex::encode(domain.verifying_contract);
 
     println!("=== arc-perp-sdk example: constructed order ===");
     println!("EIP-712 domain:");
     println!("  name             : {}", DomainSeparatorInput::NAME);
     println!("  version          : {}", DomainSeparatorInput::VERSION);
     println!("  chainId          : {}", domain.chain_id);
-    println!("  verifyingContract: 0x{}", hex::encode(domain.verifying_contract));
+    println!("  verifyingContract: 0x{verifying_hex}");
     println!();
     println!("Order:");
     println!("  accountId   : {}", order.account_id);
     println!("  marketId    : {}", order.market_id);
     println!("  isBuy       : {}", order.is_buy);
-    println!("  limitPrice  : {} (= ${:.2})", order.limit_price, (order.limit_price as f64) / 1e8);
-    println!("  size        : {} (= {} units)", order.size, (order.size as f64) / 1e18);
+    println!("  limitPrice  : {} (PRICE_SCALE=1e8)", order.limit_price);
+    println!("  size        : {} (1e18 base units)", order.size);
     println!("  nonce       : {}", order.nonce);
     println!("  expiry      : {}", order.expiry);
     println!("  reduceOnly  : {}", order.reduce_only);

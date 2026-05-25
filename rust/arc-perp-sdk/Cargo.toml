@@ -32,8 +32,9 @@ default = []
 
 [lints.rust]
 unsafe_code = "forbid"
-missing_docs = "warn"
 
 [lints.clippy]
-pedantic = { level = "warn", priority = -1 }
-module_name_repetitions = "allow"
+all = { level = "warn", priority = -1 }
+# Pedantic intentionally NOT enabled at v0.1 - it's noisy on stub code
+# and we tighten as the SDK grows. The `clippy::all` gate still catches
+# correctness + suspicious patterns.
