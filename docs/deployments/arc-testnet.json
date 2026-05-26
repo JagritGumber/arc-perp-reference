@@ -10,6 +10,15 @@
     "USDCVault": "0xa4d41df0ad7c420c19c971772e57469459204833",
     "MarketRegistry": "0x96a6e69af20ae3a52e164373c345e0a47f23ead2"
   },
+  "verifiedOnArcscan": true,
+  "proofOfLife": {
+    "registerAccount": {
+      "at": "2026-05-26T00:00:00Z",
+      "txHash": "0x46a66e2b8d5c0f6df7d89c141fb791463f4a14f5031fabf0bb0a8f213e29dea8",
+      "arcscan": "https://testnet.arcscan.app/tx/0x46a66e2b8d5c0f6df7d89c141fb791463f4a14f5031fabf0bb0a8f213e29dea8",
+      "from": "0x12866ac2546ff9a3ed4772174c5efdc794922571"
+    }
+  },
   "constants": {
     "USDC": "0x3600000000000000000000000000000000000000"
   }

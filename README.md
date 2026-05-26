@@ -86,6 +86,8 @@ USDC collateral token on Arc Testnet: [`0x36000000000000000000000000000000000000
 
 Full manifest: [`docs/deployments/arc-testnet.json`](./docs/deployments/arc-testnet.json).
 
+**Proof of life.** `AccountManager.registerAccount()` invoked from the deployer wallet on 2026-05-26: [tx 0x46a66e...29dea8](https://testnet.arcscan.app/tx/0x46a66e2b8d5c0f6df7d89c141fb791463f4a14f5031fabf0bb0a8f213e29dea8). The AccountManager now has one registered account on-chain; click through to see the `AccountRegistered` event.
+
 The three primitives are permissionless and live. Anyone can:
 
 - Call `AccountManager.registerAccount()` and receive an `accountId` (no allowlist, no custody binding, no Fireblocks step).
