@@ -8,6 +8,9 @@ broadcast/
 # Locally-downloaded CI deploy artifacts (the canonical copy lives in the workflow run)
 deploy-artifacts-local/
 
+# One-off verify helper using the deploy-artifacts-local flat sources
+scripts/verify.mjs
+
 # Foundry deps
 lib/
 

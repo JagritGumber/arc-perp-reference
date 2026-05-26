@@ -74,7 +74,7 @@ forge test
 
 ## Live on Arc Testnet
 
-Tangent v0.1 is deployed and verifiable on Arc Testnet (chainId `11111`) as of 2026-05-25:
+Tangent v0.1 is **deployed and source-verified** on Arc Testnet (chainId `11111`) as of 2026-05-25. Click any address below and select the "Code" tab on Arcscan to read the verified Solidity:
 
 | Contract | Address |
 |---|---|
